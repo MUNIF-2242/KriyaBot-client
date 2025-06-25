@@ -155,7 +155,7 @@ const PagesPart = () => {
               <span className="nav-icon">
                 <i className="fa-light fa-comments-question-check"></i>
               </span>
-              <span className="sidebar-txt">RAG</span>
+              <span className="sidebar-txt">KriyaKarak</span>
             </NavLink>
           </li>
         </ul>

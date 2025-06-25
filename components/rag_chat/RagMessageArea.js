@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useContext } from "react";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 import { RagChatbotContext } from "@/context/RagChatbotContext";
+import ReactMarkdown from 'react-markdown';
 
 const RagMessageArea = () => {
   const { messages, botResponseLoading } = useContext(RagChatbotContext);
@@ -40,16 +41,9 @@ const RagMessageArea = () => {
                   >
                     <div className="msg-box">
                       <div className="msg-box-inner">
-                        <div className="msg-option">
-                          <span className="msg-time">1 day</span>
-                          <button className="btn-flush">
-                            <i className="fa-light fa-ellipsis-vertical"></i>
-                          </button>
-                        </div>
-                        <span className="sent-status seen" title="seen">
-                          <i className="fa-solid fa-circle-check"></i>
-                        </span>
-                        <p>{message.content}</p>
+                       
+                      
+                     <p>{message.content}</p>
                       </div>
                     </div>
                     <div className="avatar">
@@ -79,13 +73,22 @@ const RagMessageArea = () => {
                     </div>
                     <div className="msg-box">
                       <div className="msg-box-inner">
-                        <div className="msg-option">
-                          <span className="msg-time">1 day</span>
-                          <button className="btn-flush">
-                            <i className="fa-light fa-ellipsis-vertical"></i>
-                          </button>
-                        </div>
-                        <p>{message.content}</p>
+                       
+                      <ReactMarkdown
+  components={{
+    a: ({ node, ...props }) => (
+      <a
+        {...props}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ color: "yellow", textDecoration: "underline" }} // 👈 change color here
+      />
+    ),
+  }}
+>
+  {message.content}
+</ReactMarkdown>
+
                       </div>
                     </div>
                   </div>
@@ -108,12 +111,7 @@ const RagMessageArea = () => {
               </div>
               <div className="msg-box">
                 <div className="msg-box-inner">
-                  <div className="msg-option">
-                    <span className="msg-time">now</span>
-                    <button className="btn-flush">
-                      <i className="fa-light fa-ellipsis-vertical"></i>
-                    </button>
-                  </div>
+                 
                   <div className="bouncing-loader">
                     <div></div>
                     <div></div>

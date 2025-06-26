@@ -38,7 +38,8 @@ const AddNewDoc = () => {
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    disabled={loading}
+                    //disabled={loading}
+                    disabled = {true}
                   >
                     {getButtonText()}
                   </button>

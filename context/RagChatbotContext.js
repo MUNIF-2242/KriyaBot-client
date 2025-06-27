@@ -5,8 +5,8 @@ import "sweetalert2/dist/sweetalert2.min.css";
 
 const MySwal = withReactContent(Swal);
 
-//const BASE_URL = "http://localhost:20000/dev";
-const BASE_URL = "https://xpg0w4n6q6.execute-api.us-east-1.amazonaws.com/prod";
+const BASE_URL = "http://localhost:20000/dev";
+// const BASE_URL = "https://xpg0w4n6q6.execute-api.us-east-1.amazonaws.com/prod";
 
 export const RagChatbotContext = createContext();
 
@@ -30,6 +30,82 @@ export const RagChatbotProvider = ({ children }) => {
     setError("");
     setUploadPhase("idle");
   };
+  
+const handleMagicEnhanceTextBtnClick = async (e) => {
+  e.preventDefault();
+
+  if (!inputMessage.trim()) {
+    MySwal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "warning",
+      title: "Please enter text to enhance.",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true,
+      customClass: {
+        popup: "colored-toast",
+      },
+    });
+    return;
+  }
+
+  try {
+    //setBotResponseLoading(true); // optional: show a loading state
+
+    const response = await fetch(`${BASE_URL}/enhance`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text: inputMessage }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Enhancement failed");
+    }
+
+
+
+    const enhancedText = data.enhanced || "";
+
+    // 🟢 Update the input message with enhanced text
+    setInputMessage(enhancedText);
+
+    MySwal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "success",
+      title: "Text enhanced successfully!",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true,
+      customClass: {
+        popup: "colored-toast",
+      },
+    });
+  } catch (error) {
+    console.error("❌ Enhance Text Error:", error);
+    MySwal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "error",
+      title: "Failed to enhance text",
+      text: error.message,
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      customClass: {
+        popup: "colored-toast",
+      },
+    });
+  } finally {
+    //setBotResponseLoading(false);
+  }
+};
+
 
   const handleQuestionSubmit = async (e) => {
     e.preventDefault();
@@ -236,6 +312,7 @@ export const RagChatbotProvider = ({ children }) => {
         botResponseLoading,
         inputMessage,
         getButtonText,
+         handleMagicEnhanceTextBtnClick
       }}
     >
       {children}

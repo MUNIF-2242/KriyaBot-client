@@ -8,6 +8,7 @@ const RagMessageInput = () => {
     setInputMessage,
     handleQuestionSubmit,
     botResponseLoading,
+    handleMagicEnhanceTextBtnClick
   } = useContext(RagChatbotContext);
 
   const inputRef = useRef(null);
@@ -22,7 +23,11 @@ const RagMessageInput = () => {
   return (
     <div className="panel-body msg-type-area">
       <form onSubmit={handleQuestionSubmit}>
+        <button className="btn btn-icon btn-outline-primary" onClick={handleMagicEnhanceTextBtnClick}>
+  <i className="fa-light fa-wand-magic-sparkles"></i>
+</button>
         <Form.Control
+    
           ref={inputRef}
           autoComplete="off"
           type="text"

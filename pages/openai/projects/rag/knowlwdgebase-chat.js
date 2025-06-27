@@ -19,11 +19,9 @@ const ChatMainContent = () => {
     }
   }, [session, status, router]);
 
-  // Show welcome toast after successful login
-  // Updated section of your useEffect for the welcome toast
+/*
 useEffect(() => {
   if (session && !hasShownWelcomeToast) {
-    // Small delay to ensure the page is fully loaded
     const timer = setTimeout(() => {
       Swal.fire({
         title: "KriyaBot is Online. 🤖",
@@ -107,6 +105,7 @@ useEffect(() => {
     return () => clearTimeout(timer);
   }
 }, [session, hasShownWelcomeToast]);
+*/
 
 
   if (status === "loading") {

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { RagChatbotContext } from "@/context/RagChatbotContext";
 
 const AddNewDoc = () => {
@@ -7,14 +7,50 @@ const AddNewDoc = () => {
     handleFileChange,
     error,
     loading,
-    uploadedPdfUrl,
     uploadPhase,
     indexingProgress,
     getButtonText,
   } = useContext(RagChatbotContext);
 
+  // State for text input
+  const [textContent, setTextContent] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Handle text content change
+  const handleTextChange = (e) => {
+    setTextContent(e.target.value);
+  };
+
+  // Handle text update submission
+  const handleTextUpdate = async (e) => {
+    e.preventDefault();
+    if (!textContent.trim()) {
+      alert("Please enter some text to update");
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      // Add your text update logic here
+      // This could be a function from your context or a direct API call
+      console.log("Updating text:", textContent);
+      
+      // Example: await updateTextContent(textContent);
+      
+      // Clear the textarea after successful update
+      setTextContent("");
+      alert("Text updated successfully!");
+    } catch (error) {
+      console.error("Error updating text:", error);
+      alert("Failed to update text. Please try again.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <div className="col-xxl-12 col-md-5">
+      {/* PDF Upload Section */}
       <div className="panel">
         <div className="panel-header">
           <h5>Upload PDF</h5>
@@ -32,14 +68,12 @@ const AddNewDoc = () => {
                   disabled={loading}
                 />
               </div>
-
               <div className="col-12 d-flex justify-content-end">
                 <div className="btn-box">
                   <button
                     type="submit"
                     className="btn btn-primary"
                     disabled={loading}
-                    //disabled = {true}
                   >
                     {getButtonText()}
                   </button>
@@ -47,7 +81,6 @@ const AddNewDoc = () => {
               </div>
             </div>
           </form>
-
           {/* Progress indicator for indexing */}
           {uploadPhase === "indexing" && (
             <div className="mt-3">
@@ -76,6 +109,41 @@ const AddNewDoc = () => {
         </div>
       </div>
 
+      {/* Text Input Section */}
+      <>
+        <div className="panel-header">
+          <h5>Answer Text Chunk</h5>
+        </div>
+        <div className="panel-body">
+          <form onSubmit={handleTextUpdate}>
+            <div className="row g-3">
+              <div className="col-12">
+                <textarea
+                  className="form-control"
+                  rows="6"
+                  placeholder="Enter your text content here..."
+                  value={textContent}
+                  onChange={handleTextChange}
+                  disabled={isUpdating}
+                />
+              </div>
+              <div className="col-12 d-flex justify-content-end">
+                <div className="btn-box">
+                  <button
+                    type="submit"
+                    className="btn btn-success"
+                    disabled={isUpdating || !textContent.trim()}
+                  >
+                    {isUpdating ? "Updating..." : "Update Text"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </>
+
+      {/* Error Display */}
       {error && (
         <div className="panel mt-4">
           <div className="panel-header">

@@ -1,9 +1,6 @@
-import React, { createContext, useState } from "react";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
-import "sweetalert2/dist/sweetalert2.min.css";
 
-const MySwal = withReactContent(Swal);
+import React, { createContext, useState } from "react";
+import { showToast } from "@/components/utils/swalUtils";
 
 const BASE_URL = "http://localhost:20000/dev";
 // const BASE_URL = "https://xpg0w4n6q6.execute-api.us-east-1.amazonaws.com/prod";
@@ -11,18 +8,16 @@ const BASE_URL = "http://localhost:20000/dev";
 export const RagChatbotContext = createContext();
 
 export const RagChatbotProvider = ({ children }) => {
-  const [uploadPhase, setUploadPhase] = useState("idle"); // "idle", "uploading", "indexing"
+  const [uploadPhase, setUploadPhase] = useState("idle");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadedPdfResponse, setUploadPdfResponse] = useState(null);
   const [uploadedPdfUrl, setUploadedPdfUrl] = useState([]);
   const [error, setError] = useState("");
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [botResponseLoading, setBotResponseLoading] = useState(false);
 
-  // Handle file selection
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
     setSelectedFiles(files);
@@ -30,131 +25,73 @@ export const RagChatbotProvider = ({ children }) => {
     setError("");
     setUploadPhase("idle");
   };
-  
-const handleMagicEnhanceTextBtnClick = async (e) => {
-  e.preventDefault();
 
-  if (!inputMessage.trim()) {
-    MySwal.fire({
-      toast: true,
-      position: "top-end",
-      icon: "warning",
-      title: "Please enter text to enhance.",
-      showConfirmButton: false,
-      timer: 2500,
-      timerProgressBar: true,
-      customClass: {
-        popup: "colored-toast",
-      },
-    });
-    return;
-  }
+  const handleMagicEnhanceTextBtnClick = async (e) => {
+    e.preventDefault();
 
-  try {
-    //setBotResponseLoading(true); // optional: show a loading state
-
-    const response = await fetch(`${BASE_URL}/enhance`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text: inputMessage }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Enhancement failed");
+    if (!inputMessage.trim()) {
+      showToast("warning", "Please enter text to enhance.");
+      return;
     }
 
+    try {
+      const response = await fetch(`${BASE_URL}/enhance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: inputMessage }),
+      });
 
+      const data = await response.json();
 
-    const enhancedText = data.enhanced || "";
+      if (!response.ok) {
+        throw new Error(data.message || "Enhancement failed");
+      }
 
-    // 🟢 Update the input message with enhanced text
-    setInputMessage(enhancedText);
-
-    MySwal.fire({
-      toast: true,
-      position: "top-end",
-      icon: "success",
-      title: "Text enhanced successfully!",
-      showConfirmButton: false,
-      timer: 2500,
-      timerProgressBar: true,
-      customClass: {
-        popup: "colored-toast",
-      },
-    });
-  } catch (error) {
-    console.error("❌ Enhance Text Error:", error);
-    MySwal.fire({
-      toast: true,
-      position: "top-end",
-      icon: "error",
-      title: "Failed to enhance text",
-      text: error.message,
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-      customClass: {
-        popup: "colored-toast",
-      },
-    });
-  } finally {
-    //setBotResponseLoading(false);
-  }
-};
-
+      const enhancedText = data.enhanced || "";
+      setInputMessage(enhancedText);
+      showToast("success", "Text enhanced successfully!");
+    } catch (error) {
+      console.error("❌ Enhance Text Error:", error);
+      showToast("error", "Failed to enhance text", error.message);
+    }
+  };
 
   const handleQuestionSubmit = async (e) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
 
-    const question = inputMessage; // 🟡 create a local copy first
-    setInputMessage(""); // 🟢 immediately clear the input
+    const question = inputMessage;
+    setInputMessage("");
 
     const userMessage = { role: "user", content: question };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     setBotResponseLoading(true);
 
-    console.log("📥 User Message:", userMessage);
     try {
       const response = await fetch(`${BASE_URL}/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }), // use local copy
+        body: JSON.stringify({ question }),
       });
 
       const data = await response.json();
+      console.log("Data")
+      console.log(data)
       const botMessage = {
         role: "assistant",
         content: data.answer || "No answer found.",
       };
       setMessages((prevMessages) => [...prevMessages, botMessage]);
-
-      console.log("API Response:", data.answer);
     } catch (error) {
       console.error("❌ Error :", error);
-      MySwal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "Error during query submission",
-        text: error.message,
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        customClass: {
-          popup: "colored-toast",
-        },
-      });
+      showToast("error", "Error during query submission", error.message);
     } finally {
       setBotResponseLoading(false);
     }
   };
 
-  // Call indexing endpoint
   const triggerEmbeddingJob = async (pdfUrl) => {
     try {
       const res = await fetch(`${BASE_URL}/index`, {
@@ -171,55 +108,17 @@ const handleMagicEnhanceTextBtnClick = async (e) => {
         throw new Error(data.message || "Failed to index the PDF");
       }
 
-      console.log("📄 Embedding Response:", data);
-
-      // ✅ Check if skipped
       if (data.skipped) {
-        MySwal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "error",
-          title: "Already indexed. Skipped.",
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-          customClass: {
-            popup: "colored-toast",
-          },
-        });
+        showToast("error", "Already indexed. Skipped.");
       } else {
-        MySwal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "success",
-          title: "Document indexed successfully!",
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-          customClass: {
-            popup: "colored-toast",
-          },
-        });
+        showToast("success", "Document indexed successfully!");
       }
     } catch (error) {
       console.error("❌ Error during embedding:", error);
-      MySwal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "Embedding failed",
-        text: error.message,
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        customClass: {
-          popup: "colored-toast",
-        },
-      });
+      showToast("error", "Embedding failed", error.message);
     }
   };
 
-  // Handle file upload and trigger embedding
   const handlePdfUploadSubmit = async (e) => {
     e.preventDefault();
 
@@ -255,22 +154,9 @@ const handleMagicEnhanceTextBtnClick = async (e) => {
 
       const urls = data.files?.map((f) => f.s3Url).filter(Boolean) || [];
       setUploadedPdfUrl(urls);
+      showToast("success", "PDF uploaded successfully!");
 
-      MySwal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "PDF uploaded successfully!",
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        customClass: {
-          popup: "colored-toast",
-        },
-      });
       setUploadPhase("indexing");
-      // setIndexingProgress({ current: 0, total: urls.length });
-      // Index each uploaded document
       for (let i = 0; i < urls.length; i++) {
         console.log(`📥 Indexing file ${i + 1} of ${urls.length}`);
         await triggerEmbeddingJob(urls[i]);
@@ -284,7 +170,6 @@ const handleMagicEnhanceTextBtnClick = async (e) => {
     }
   };
 
-  // Get button text based on current phase
   const getButtonText = () => {
     switch (uploadPhase) {
       case "uploading":
@@ -312,7 +197,7 @@ const handleMagicEnhanceTextBtnClick = async (e) => {
         botResponseLoading,
         inputMessage,
         getButtonText,
-         handleMagicEnhanceTextBtnClick
+        handleMagicEnhanceTextBtnClick,
       }}
     >
       {children}

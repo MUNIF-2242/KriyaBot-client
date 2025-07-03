@@ -1,4 +1,3 @@
-
 import React, { createContext, useState } from "react";
 import { showToast } from "@/components/utils/swalUtils";
 
@@ -78,8 +77,8 @@ export const RagChatbotProvider = ({ children }) => {
       });
 
       const data = await response.json();
-      console.log("Data.....")
-      console.log(data)
+      console.log("Data.....");
+      console.log(data);
       const botMessage = {
         role: "assistant",
         content: data.answer || "No answer found.",
@@ -93,14 +92,14 @@ export const RagChatbotProvider = ({ children }) => {
     }
   };
 
-  const triggerEmbeddingJob = async (pdfUrl,versionCode) => {
+  const triggerEmbeddingJob = async (pdfUrl, versionCode) => {
     try {
       const res = await fetch(`${BASE_URL}/index`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url: pdfUrl,version:versionCode }),
+        body: JSON.stringify({ url: pdfUrl, version: versionCode }),
       });
 
       const data = await res.json();
@@ -117,65 +116,64 @@ export const RagChatbotProvider = ({ children }) => {
     } catch (error) {
       console.error("❌ Error during embedding:", error);
       showToast("error", "Embedding failed", error.message);
-    }finally{
-      setVersionCode("")
+    } finally {
+      setVersionCode("");
     }
   };
 
- const handlePdfUploadSubmit = async (e, versionCode) => {
-  e.preventDefault();
+  const handlePdfUploadSubmit = async (e, versionCode) => {
+    e.preventDefault();
 
-  if (selectedFiles.length === 0) {
-    alert("Please select at least one file.");
-    return;
-  }
-
-  const formData = new FormData();
-  selectedFiles.forEach((file) => {
-    formData.append("files", file);
-  });
-
-  try {
-    setLoading(true);
-    setError("");
-    setUploadedPdfUrl([]);
-    setUploadPhase("uploading");
-
-    const res = await fetch(`${BASE_URL}/upload`, {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-    setUploadPdfResponse(data);
-
-    if (!res.ok || data.successfulUploads === 0) {
-      setError(data.message || "Upload failed");
-      setUploadPhase("idle");
+    if (selectedFiles.length === 0) {
+      alert("Please select at least one file.");
       return;
     }
 
-    const urls = data.files?.map((f) => f.s3Url).filter(Boolean) || [];
-    setUploadedPdfUrl(urls);
-    showToast("success", "PDF uploaded successfully!");
+    const formData = new FormData();
+    selectedFiles.forEach((file) => {
+      formData.append("files", file);
+    });
 
-    setUploadPhase("indexing");
+    try {
+      setLoading(true);
+      setError("");
+      setUploadedPdfUrl([]);
+      setUploadPhase("uploading");
 
-    for (let i = 0; i < urls.length; i++) {
-      console.log(`📥 Indexing file ${i + 1} of ${urls.length}`);
-      
-      // ✅ Pass versionCode along with the URL
-      await triggerEmbeddingJob(urls[i], versionCode);
+      const res = await fetch(`${BASE_URL}/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      setUploadPdfResponse(data);
+
+      if (!res.ok || data.successfulUploads === 0) {
+        setError(data.message || "Upload failed");
+        setUploadPhase("idle");
+        return;
+      }
+
+      const urls = data.files?.map((f) => f.s3Url).filter(Boolean) || [];
+      setUploadedPdfUrl(urls);
+      showToast("success", "PDF uploaded successfully!");
+
+      setUploadPhase("indexing");
+
+      for (let i = 0; i < urls.length; i++) {
+        console.log(`📥 Indexing file ${i + 1} of ${urls.length}`);
+
+        // ✅ Pass versionCode along with the URL
+        await triggerEmbeddingJob(urls[i], versionCode);
+      }
+    } catch (err) {
+      console.error("❌ Upload failed:", err);
+      setError("Something went wrong while uploading");
+    } finally {
+      setLoading(false);
+      setUploadPhase("idle");
     }
-  } catch (err) {
-    console.error("❌ Upload failed:", err);
-    setError("Something went wrong while uploading");
-  } finally {
-    setLoading(false);
-    setUploadPhase("idle");
-  }
-};
-
+  };
 
   const getButtonText = () => {
     switch (uploadPhase) {
@@ -206,7 +204,7 @@ export const RagChatbotProvider = ({ children }) => {
         getButtonText,
         handleMagicEnhanceTextBtnClick,
         setVersionCode,
-        versionCode
+        versionCode,
       }}
     >
       {children}

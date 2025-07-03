@@ -11,7 +11,7 @@ const AddNewDoc = () => {
     indexingProgress,
     getButtonText,
     setVersionCode,
-    versionCode
+    versionCode,
   } = useContext(RagChatbotContext);
 
   // State for text input
@@ -36,9 +36,9 @@ const AddNewDoc = () => {
       // Add your text update logic here
       // This could be a function from your context or a direct API call
       console.log("Updating text:", textContent);
-      
+
       // Example: await updateTextContent(textContent);
-      
+
       // Clear the textarea after successful update
       setTextContent("");
       alert("Text updated successfully!");
@@ -58,10 +58,12 @@ const AddNewDoc = () => {
           <h5>Admin</h5>
         </div>
         <div className="panel-body">
-          <form  onSubmit={(e) => {
-    e.preventDefault();
-    handlePdfUploadSubmit(e, versionCode);
-  }}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handlePdfUploadSubmit(e, versionCode);
+            }}
+          >
             <div className="row g-3">
               <div className="col-12">
                 <p className="mb-2">Upload PDF</p>
@@ -73,19 +75,16 @@ const AddNewDoc = () => {
                   onChange={handleFileChange}
                   disabled={loading}
                 />
-            
               </div>
-                <div className="col-12">
+              <div className="col-12">
                 <p className="mb-2">Knowledgebase Version</p>
-                   <input
+                <input
                   className="form-control"
                   type="text"
                   placeholder="Enter version code (e.g. v1, v2, v3)"
-
                   value={versionCode}
-                onChange={(e) => setVersionCode(e.target.value)}
-                disabled={loading}
-                
+                  onChange={(e) => setVersionCode(e.target.value)}
+                  disabled={loading}
                 />
               </div>
               <div className="col-12 d-flex justify-content-end">
@@ -131,20 +130,49 @@ const AddNewDoc = () => {
 
       {/* Text Input Section */}
       <>
-        <div className="panel-header">
+        {/* <div className="panel-header">
           <h5>Answer Text Chunk</h5>
-        </div>
+        </div> */}
         <div className="panel-body">
           <form onSubmit={handleTextUpdate}>
             <div className="row g-3">
               <div className="col-12">
+                <p className="mb-2">Question</p>
+
                 <textarea
-                  className="form-control"
-                  rows="6"
+                  className="form-control mb-2"
+                  rows="2"
                   placeholder="Enter your text content here..."
                   value={textContent}
                   onChange={handleTextChange}
                   disabled={isUpdating}
+                />
+                <p className="mb-2">Answer</p>
+                <textarea
+                  className="form-control mb-2"
+                  rows="5"
+                  placeholder="Enter your text content here..."
+                  value={textContent}
+                  onChange={handleTextChange}
+                  disabled={isUpdating}
+                />
+                <p className="mb-2">URL</p>
+                <textarea
+                  className="form-control mb-2"
+                  rows="1"
+                  placeholder="Enter your text content here..."
+                  value={textContent}
+                  onChange={() => {}}
+                  disabled={isUpdating}
+                />
+                <p className="mb-2">Knowledgebase Version</p>
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder="Enter version code (e.g. v1, v2, v3)"
+                  value={versionCode}
+                  onChange={(e) => setVersionCode(e.target.value)}
+                  disabled={loading}
                 />
               </div>
               <div className="col-12 d-flex justify-content-end">

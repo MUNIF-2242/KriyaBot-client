@@ -19,7 +19,7 @@ const ChatMainContent = () => {
     }
   }, [session, status, router]);
 
-  /*
+/*
 useEffect(() => {
   if (session && !hasShownWelcomeToast) {
     const timer = setTimeout(() => {
@@ -107,6 +107,7 @@ useEffect(() => {
 }, [session, hasShownWelcomeToast]);
 */
 
+
   if (status === "loading") {
     return <div>Loading...</div>;
   }
@@ -119,22 +120,41 @@ useEffect(() => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/assets/favicon.png" />
       </Head>
-      <div className="main-content">
-        <div className="chatting-panel">
-          <div className="d-flex">
-            <div className="">
-              <div className="panel-body border-bottom panelbody-openai"></div>
-            </div>
-
-            <div className="panel position-relative bedrock-custom-panel">
-              <RagChatingArea />
-            </div>
-            <RagChatSidebar />
-          </div>
+   <div className="main-content">
+  <div className="chatting-panel container-fluid">
+    <div className="row">
+      {/* Left Panel - 50% */}
+      <div className="col-md-6 p-0">
+        <div className="panel position-relative bedrock-custom-panel h-100">
+          <RagChatingArea />
         </div>
-
-        <Footer />
       </div>
+
+      {/* Right Panel - 50% */}
+
+
+      {/* Right Panel - 50% */}
+<div className="col-md-6 p-0">
+  <div className="panel position-relative bedrock-custom-panel h-100 d-flex flex-row">
+    {/* First Component */}
+    <div className="flex-fill border-bottom">
+      <RagChatSidebar />
+    </div>
+
+    {/* Second Component */}
+    <div className="flex-fill">
+      <RagChatSidebar />
+    </div>
+  </div>
+</div>
+
+      
+    </div>
+  </div>
+
+  <Footer />
+</div>
+
     </>
   );
 };

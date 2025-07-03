@@ -23,7 +23,7 @@ const RagMessageInput = () => {
   return (
     <div className="panel-body msg-type-area">
       <form onSubmit={handleQuestionSubmit}>
-        <button className="btn btn-icon btn-outline-primary" onClick={handleMagicEnhanceTextBtnClick}>
+        <button className="btn btn-icon btn-outline-primary" onClick={handleMagicEnhanceTextBtnClick} disabled="true">
   <i className="fa-light fa-wand-magic-sparkles"></i>
 </button>
         <Form.Control

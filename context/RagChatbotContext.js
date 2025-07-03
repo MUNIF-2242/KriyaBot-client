@@ -17,6 +17,7 @@ export const RagChatbotProvider = ({ children }) => {
   const [inputMessage, setInputMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [botResponseLoading, setBotResponseLoading] = useState(false);
+  const [versionCode, setVersionCode] = useState("");
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
@@ -77,7 +78,7 @@ export const RagChatbotProvider = ({ children }) => {
       });
 
       const data = await response.json();
-      console.log("Data")
+      console.log("Data.....")
       console.log(data)
       const botMessage = {
         role: "assistant",
@@ -92,14 +93,14 @@ export const RagChatbotProvider = ({ children }) => {
     }
   };
 
-  const triggerEmbeddingJob = async (pdfUrl) => {
+  const triggerEmbeddingJob = async (pdfUrl,versionCode) => {
     try {
       const res = await fetch(`${BASE_URL}/index`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url: pdfUrl }),
+        body: JSON.stringify({ url: pdfUrl,version:versionCode }),
       });
 
       const data = await res.json();
@@ -116,59 +117,65 @@ export const RagChatbotProvider = ({ children }) => {
     } catch (error) {
       console.error("❌ Error during embedding:", error);
       showToast("error", "Embedding failed", error.message);
+    }finally{
+      setVersionCode("")
     }
   };
 
-  const handlePdfUploadSubmit = async (e) => {
-    e.preventDefault();
+ const handlePdfUploadSubmit = async (e, versionCode) => {
+  e.preventDefault();
 
-    if (selectedFiles.length === 0) {
-      alert("Please select at least one file.");
+  if (selectedFiles.length === 0) {
+    alert("Please select at least one file.");
+    return;
+  }
+
+  const formData = new FormData();
+  selectedFiles.forEach((file) => {
+    formData.append("files", file);
+  });
+
+  try {
+    setLoading(true);
+    setError("");
+    setUploadedPdfUrl([]);
+    setUploadPhase("uploading");
+
+    const res = await fetch(`${BASE_URL}/upload`, {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    setUploadPdfResponse(data);
+
+    if (!res.ok || data.successfulUploads === 0) {
+      setError(data.message || "Upload failed");
+      setUploadPhase("idle");
       return;
     }
 
-    const formData = new FormData();
-    selectedFiles.forEach((file) => {
-      formData.append("files", file);
-    });
+    const urls = data.files?.map((f) => f.s3Url).filter(Boolean) || [];
+    setUploadedPdfUrl(urls);
+    showToast("success", "PDF uploaded successfully!");
 
-    try {
-      setLoading(true);
-      setError("");
-      setUploadedPdfUrl([]);
-      setUploadPhase("uploading");
+    setUploadPhase("indexing");
 
-      const res = await fetch(`${BASE_URL}/upload`, {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      setUploadPdfResponse(data);
-
-      if (!res.ok || data.successfulUploads === 0) {
-        setError(data.message || "Upload failed");
-        setUploadPhase("idle");
-        return;
-      }
-
-      const urls = data.files?.map((f) => f.s3Url).filter(Boolean) || [];
-      setUploadedPdfUrl(urls);
-      showToast("success", "PDF uploaded successfully!");
-
-      setUploadPhase("indexing");
-      for (let i = 0; i < urls.length; i++) {
-        console.log(`📥 Indexing file ${i + 1} of ${urls.length}`);
-        await triggerEmbeddingJob(urls[i]);
-      }
-    } catch (err) {
-      console.error("❌ Upload failed:", err);
-      setError("Something went wrong while uploading");
-    } finally {
-      setLoading(false);
-      setUploadPhase("idle");
+    for (let i = 0; i < urls.length; i++) {
+      console.log(`📥 Indexing file ${i + 1} of ${urls.length}`);
+      
+      // ✅ Pass versionCode along with the URL
+      await triggerEmbeddingJob(urls[i], versionCode);
     }
-  };
+  } catch (err) {
+    console.error("❌ Upload failed:", err);
+    setError("Something went wrong while uploading");
+  } finally {
+    setLoading(false);
+    setUploadPhase("idle");
+  }
+};
+
 
   const getButtonText = () => {
     switch (uploadPhase) {
@@ -198,6 +205,8 @@ export const RagChatbotProvider = ({ children }) => {
         inputMessage,
         getButtonText,
         handleMagicEnhanceTextBtnClick,
+        setVersionCode,
+        versionCode
       }}
     >
       {children}

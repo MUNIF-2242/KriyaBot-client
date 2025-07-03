@@ -10,6 +10,8 @@ const AddNewDoc = () => {
     uploadPhase,
     indexingProgress,
     getButtonText,
+    setVersionCode,
+    versionCode
   } = useContext(RagChatbotContext);
 
   // State for text input
@@ -53,12 +55,16 @@ const AddNewDoc = () => {
       {/* PDF Upload Section */}
       <div className="panel">
         <div className="panel-header">
-          <h5>Upload PDF</h5>
+          <h5>Admin</h5>
         </div>
         <div className="panel-body">
-          <form onSubmit={handlePdfUploadSubmit}>
+          <form  onSubmit={(e) => {
+    e.preventDefault();
+    handlePdfUploadSubmit(e, versionCode);
+  }}>
             <div className="row g-3">
               <div className="col-12">
+                <p className="mb-2">Upload PDF</p>
                 <input
                   className="form-control"
                   type="file"
@@ -66,6 +72,20 @@ const AddNewDoc = () => {
                   multiple
                   onChange={handleFileChange}
                   disabled={loading}
+                />
+            
+              </div>
+                <div className="col-12">
+                <p className="mb-2">Knowledgebase Version</p>
+                   <input
+                  className="form-control"
+                  type="text"
+                  placeholder="Enter version code (e.g. v1, v2, v3)"
+
+                  value={versionCode}
+                onChange={(e) => setVersionCode(e.target.value)}
+                disabled={loading}
+                
                 />
               </div>
               <div className="col-12 d-flex justify-content-end">

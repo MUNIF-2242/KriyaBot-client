@@ -76,7 +76,7 @@ const AddNewDoc = () => {
                   disabled={loading}
                 />
               </div>
-              <div className="col-12">
+              {/* <div className="col-12">
                 <p className="mb-2">Knowledgebase Version</p>
                 <input
                   className="form-control"
@@ -86,7 +86,7 @@ const AddNewDoc = () => {
                   onChange={(e) => setVersionCode(e.target.value)}
                   disabled={loading}
                 />
-              </div>
+              </div> */}
               <div className="col-12 d-flex justify-content-end">
                 <div className="btn-box">
                   <button
@@ -156,7 +156,7 @@ const AddNewDoc = () => {
                   onChange={handleTextChange}
                   disabled={isUpdating}
                 />
-                <p className="mb-2">URL</p>
+                {/* <p className="mb-2">URL</p>
                 <textarea
                   className="form-control mb-2"
                   rows="1"
@@ -173,7 +173,7 @@ const AddNewDoc = () => {
                   value={versionCode}
                   onChange={(e) => setVersionCode(e.target.value)}
                   disabled={loading}
-                />
+                /> */}
               </div>
               <div className="col-12 d-flex justify-content-end">
                 <div className="btn-box">
@@ -182,7 +182,7 @@ const AddNewDoc = () => {
                     className="btn btn-success"
                     disabled={isUpdating || !textContent.trim()}
                   >
-                    {isUpdating ? "Updating..." : "Update Text"}
+                    {isUpdating ? "Updating..." : "Update Answer"}
                   </button>
                 </div>
               </div>

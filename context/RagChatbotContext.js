@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import { showToast } from "@/components/utils/swalUtils";
 
 const BASE_URL = "http://localhost:20000/dev";
@@ -17,6 +17,14 @@ export const RagChatbotProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [botResponseLoading, setBotResponseLoading] = useState(false);
   const [versionCode, setVersionCode] = useState("");
+  const [modelResponse, setModelResponse] = useState(null);
+  const [updateAnswer, setUpdateAnswer] = useState("");
+
+  useEffect(() => {
+    if (modelResponse?.source?.originalText) {
+      setUpdateAnswer(modelResponse?.source?.originalText);
+    }
+  }, [modelResponse?.source?.originalText]);
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
@@ -58,14 +66,53 @@ export const RagChatbotProvider = ({ children }) => {
     }
   };
 
+  const handleAnswerUpdate = async (e) => {
+    e.preventDefault();
+
+    if (!updateAnswer.trim()) return;
+    if (!modelResponse?.source?.id) {
+      showToast(
+        "error",
+        "Missing source info",
+        "Can't update without vector ID."
+      );
+      return;
+    }
+
+    try {
+      const payload = {
+        id: modelResponse.source.id,
+        updatedText: updateAnswer,
+        metadata: {
+          docId: modelResponse.source.docId,
+          sourceUrl: modelResponse.source.sourceUrl,
+          chunkIndex: modelResponse.source.chunkIndex,
+        },
+      };
+
+      const response = await fetch(`${BASE_URL}/updateAnswer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      console.log("✅ Update response:", data);
+      showToast("success", "Answer updated successfully.");
+    } catch (error) {
+      console.error("❌ Error updating answer:", error);
+      showToast("error", "Update failed", error.message);
+    }
+  };
+
   const handleQuestionSubmit = async (e) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
 
-    const question = inputMessage;
+    const userQuestion = inputMessage;
     setInputMessage("");
 
-    const userMessage = { role: "user", content: question };
+    const userMessage = { role: "user", content: userQuestion };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     setBotResponseLoading(true);
 
@@ -73,17 +120,20 @@ export const RagChatbotProvider = ({ children }) => {
       const response = await fetch(`${BASE_URL}/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ userQuestion }),
       });
 
       const data = await response.json();
-      console.log("Data.....");
+
+      console.log("Qestion answer response data");
       console.log(data);
-      const botMessage = {
+
+      setModelResponse(data);
+      const assistentMessage = {
         role: "assistant",
-        content: data.answer || "No answer found.",
+        content: data.assistentAnswer || "No answer found.",
       };
-      setMessages((prevMessages) => [...prevMessages, botMessage]);
+      setMessages((prevMessages) => [...prevMessages, assistentMessage]);
     } catch (error) {
       console.error("❌ Error :", error);
       showToast("error", "Error during query submission", error.message);
@@ -205,6 +255,10 @@ export const RagChatbotProvider = ({ children }) => {
         handleMagicEnhanceTextBtnClick,
         setVersionCode,
         versionCode,
+        modelResponse,
+        handleAnswerUpdate,
+        setUpdateAnswer,
+        updateAnswer,
       }}
     >
       {children}

@@ -12,6 +12,10 @@ const AddNewDoc = () => {
     getButtonText,
     setVersionCode,
     versionCode,
+    modelResponse,
+    handleAnswerUpdate,
+    setUpdateAnswer,
+    updateAnswer,
   } = useContext(RagChatbotContext);
 
   // State for text input
@@ -76,7 +80,7 @@ const AddNewDoc = () => {
                   disabled={loading}
                 />
               </div>
-              {/* <div className="col-12">
+              <div className="col-12">
                 <p className="mb-2">Knowledgebase Version</p>
                 <input
                   className="form-control"
@@ -86,7 +90,7 @@ const AddNewDoc = () => {
                   onChange={(e) => setVersionCode(e.target.value)}
                   disabled={loading}
                 />
-              </div> */}
+              </div>
               <div className="col-12 d-flex justify-content-end">
                 <div className="btn-box">
                   <button
@@ -143,28 +147,18 @@ const AddNewDoc = () => {
                   className="form-control mb-2"
                   rows="2"
                   placeholder="Enter your text content here..."
-                  value={textContent}
+                  value={modelResponse?.userQuestion}
                   onChange={handleTextChange}
-                  disabled={isUpdating}
                 />
                 <p className="mb-2">Answer</p>
                 <textarea
                   className="form-control mb-2"
                   rows="5"
                   placeholder="Enter your text content here..."
-                  value={textContent}
-                  onChange={handleTextChange}
-                  disabled={isUpdating}
+                  value={updateAnswer}
+                  onChange={(e) => setUpdateAnswer(e.target.value)}
                 />
-                {/* <p className="mb-2">URL</p>
-                <textarea
-                  className="form-control mb-2"
-                  rows="1"
-                  placeholder="Enter your text content here..."
-                  value={textContent}
-                  onChange={() => {}}
-                  disabled={isUpdating}
-                />
+
                 <p className="mb-2">Knowledgebase Version</p>
                 <input
                   className="form-control"
@@ -173,14 +167,15 @@ const AddNewDoc = () => {
                   value={versionCode}
                   onChange={(e) => setVersionCode(e.target.value)}
                   disabled={loading}
-                /> */}
+                />
               </div>
               <div className="col-12 d-flex justify-content-end">
                 <div className="btn-box">
                   <button
                     type="submit"
                     className="btn btn-success"
-                    disabled={isUpdating || !textContent.trim()}
+                    //disabled={isUpdating || !textContent.trim()}
+                    onClick={handleAnswerUpdate}
                   >
                     {isUpdating ? "Updating..." : "Update Answer"}
                   </button>
